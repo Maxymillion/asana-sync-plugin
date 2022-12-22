@@ -3,13 +3,21 @@ import {App, ButtonComponent, Editor, MarkdownView, Modal, Notice, Plugin, Plugi
 // Remember to rename these classes and interfaces!
 const pluginName = "Asana Sync";
 
+function taskTemplate(title: string, link: string) {
+	return `---
+title: ${title}
+---
+# ${title}
+_[Asana](${link})_
+
+`;
+}
+
 interface AsanaSyncSettings {
 	asanaAPIKey: string;
 	asanaUserGID: string;
 	asanaWorkplaces: AsanaWorkspace[];
 	selectedWorkspace: string;
-
-
 }
 
 interface AsanaWorkspace {
@@ -96,10 +104,9 @@ export default class AsanaSync extends Plugin {
 				await this.getTasksToday(this.settings.selectedWorkspace.gid, this.settings.asanaUserGID, this.settings.asanaAPIKey).then((res) => {
 					res.data.map((task: any) => {
 						if (task.due_on !== "" && this.isToday(new Date(task.due_on))) {
-							taskList += "- [ ] [" + task.name + "](https://app.asana.com/0/" + (task.projects.length > 0 ? task.projects[0].gid : 0) + "/" + task.gid + "/f)  \n";
-							this.app.vault.create(task.gid + ".md", "Creating file");
-							// this.app.workspace.getLeavesOfType('graph')[0]
-							//console.log(task.gid+".md");
+							let taskLink = "https://app.asana.com/0/" + (task.projects.length > 0 ? task.projects[0].gid : 0) + "/" + task.gid + "/f";
+							this.app.vault.create(task.gid + ".asana.md", taskTemplate(task.name, taskLink));
+							taskList += "- [ ] [[" + task.gid + ".asana|" + task.name + "]] \n";
 						}
 					});
 				});

@@ -10,3 +10,7 @@ If your plugin does not need CSS, delete this file.
 .setting-invisible{
 	display: none;
 }
+
+.asana-modal .suggestion-content{
+	pointer-events: none;
+}

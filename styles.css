@@ -14,3 +14,9 @@ If your plugin does not need CSS, delete this file.
 .asana-modal .suggestion-content{
 	pointer-events: none;
 }
+
+.asana-modal .suggestion-due-date{
+	font-size: 12px;
+	font-style: italic;
+	opacity: 0.8;
+}

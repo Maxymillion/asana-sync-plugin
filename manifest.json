@@ -1,11 +1,10 @@
 {
-	"id": "asana-sync-plugin",
+	"id": "asana-sync",
 	"name": "Asana Sync",
-	"version": "1.0.0",
+	"version": "0.8.0",
 	"minAppVersion": "0.15.0",
-	"description": "This is a sample plugin for Obsidian. This plugin demonstrates some of the capabilities of the Obsidian API.",
+	"description": "A plugin to import your Asana tasks into Obsidian",
 	"author": "Maxymillion",
-	"authorUrl": "https://obsidian.md",
-	"fundingUrl": "https://obsidian.md/pricing",
+	"authorUrl": "https://github.com/Maxymillion",
 	"isDesktopOnly": true
 }

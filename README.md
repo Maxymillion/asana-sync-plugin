@@ -14,7 +14,7 @@ How about we make it possible to import Asana tasks into Obsidian. Note, this is
 - Assign keybindings or use the implemented commands.
 
 ### Dependencies
-Install the (Front Matter Title)[obsidian://show-plugin?id=obsidian-front-matter-title-plugin] plugin for the best experience.
+Install the [Front Matter Title](https://github.com/Snezhig/obsidian-front-matter-title) plugin for the best experience.
 
 ### Credits
 The [sample plugin (by Obsidian)](https://github.com/obsidianmd/obsidian-sample-plugin) was used as the basis for this project

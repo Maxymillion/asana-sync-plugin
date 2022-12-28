@@ -20,6 +20,7 @@ jobs:
                   node-version: "16.x"
             - name: Run NPM Build
               run: |
+                  npm install
                   npm run build
             - name: Build
               id: build

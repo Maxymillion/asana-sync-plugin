@@ -4,6 +4,8 @@ import {AsanaSyncSettings, DEFAULT_SETTINGS} from "./Utils/types";
 import {SettingsTab} from "./components/Settings";
 import {taskTemplate} from "./components/Task";
 import {isToday} from "./utils";
+import {AssignedModal} from "./components/Search/AssignedModal";
+import {FollowedModal} from "./components/Search/FollowedModal";
 
 export const pluginName = "Asana Sync";
 
@@ -11,14 +13,16 @@ export const pluginName = "Asana Sync";
 export default class AsanaSync extends Plugin {
 	settings: AsanaSyncSettings;
 
-	asanaTasks = [];
+	tasksAssigned = [];
 
-	async getTasks() {
+	tasksFollowed = [];
+
+	async getUserAssignedTasks() {
 		if (this.settings.syncInterval === 0) {
 			new Notice(pluginName + ': retrieving from Asana...');
-			return await this.getTasksToday();
+			return await this.getTasksAssigned();
 		} else {
-			let tasks = this.asanaTasks;
+			let tasks = this.tasksAssigned;
 			return new Promise(function (resolve) {
 				// @ts-ignore
 				resolve({data: tasks.data});
@@ -26,10 +30,43 @@ export default class AsanaSync extends Plugin {
 		}
 	}
 
-	async getTasksToday() {
+	async getUserFollowedTasks() {
+		if (this.settings.syncInterval === 0) {
+			new Notice(pluginName + ': retrieving from Asana...');
+			return await this.getTasksFollowed();
+		} else {
+			let tasks = this.tasksFollowed;
+			return new Promise(function (resolve) {
+				// @ts-ignore
+				resolve({data: tasks.data});
+			});
+		}
+	}
+
+	async getTasksFollowed() {
+		//https://app.asana.com/api/1.0/workspaces/4217227315264/tasks/search?followers.any=1202094292843882&completed_on=null&opt_fields=due_on,name,projects,projects.name&opt_pretty=true
+		if (this.settings.selectedWorkspace && this.settings.selectedWorkspace.gid && this.settings.asanaAPIKey) {
+			const response = await fetch('https://app.asana.com/api/1.0/workspaces/' + this.settings.selectedWorkspace.gid + '/tasks/search?' + new URLSearchParams({
+				opt_fields: "due_on,name,projects,projects.name",
+				opt_pretty: 'true',
+				completed_on: 'null',
+				"followers.any": this.settings.asanaUserGID
+			}), {
+				method: 'GET',
+				headers: {
+					'Content-Type': 'application/json',
+					'Authorization': 'Bearer ' + this.settings.asanaAPIKey,
+				},
+			});
+
+			return response.json();
+		}
+	}
+
+	async getTasksAssigned() {
 		if (this.settings.selectedWorkspace && this.settings.selectedWorkspace.gid && this.settings.asanaAPIKey) {
 			const response = await fetch('https://app.asana.com/api/1.0/tasks?' + new URLSearchParams({
-				opt_fields: "due_on,name,projects",
+				opt_fields: "due_on,name,projects,projects.name",
 				opt_pretty: 'true',
 				workspace: this.settings.selectedWorkspace.gid,
 				assignee: this.settings.asanaUserGID,
@@ -46,11 +83,18 @@ export default class AsanaSync extends Plugin {
 		}
 	}
 
+	private syncLocalTasks() {
+		this.getTasksAssigned().then((data) => {
+			this.tasksAssigned = data;
+		})
+		this.getTasksFollowed().then((data) => {
+			this.tasksFollowed = data;
+		})
+	}
+
 	syncInterval = (interval: number) => window.setInterval(() => {
 		if (this.settings.syncInterval !== 0) {
-			this.getTasksToday().then((data) => {
-				this.asanaTasks = data;
-			})
+			this.syncLocalTasks();
 		}
 	}, 1000 * interval);
 
@@ -59,11 +103,14 @@ export default class AsanaSync extends Plugin {
 
 		this.registerInterval(this.syncInterval(this.settings.syncInterval ?? 60));
 
-
 		if (this.settings.selectedWorkspace && this.settings.selectedWorkspace.gid != "" && this.settings.asanaUserGID != "") {
 
-			this.getTasksToday().then((data) => {
-				this.asanaTasks = data;
+			this.getTasksAssigned().then((data) => {
+				this.tasksAssigned = data;
+			});
+
+			this.getTasksFollowed().then((data) => {
+				this.tasksFollowed = data;
 			});
 		}
 
@@ -73,7 +120,7 @@ export default class AsanaSync extends Plugin {
 			editorCallback: async (editor: Editor, view: MarkdownView) => {
 				if (this.settings.asanaUserGID !== "") {
 					let taskList = "";
-					await this.getTasks().then((res) => {
+					await this.getUserAssignedTasks().then((res) => {
 						res.data.map((task: any) => {
 							if (task.due_on !== "" && isToday(new Date(task.due_on))) {
 								let taskLink = "https://app.asana.com/0/" + (task.projects.length > 0 ? task.projects[0].gid : 0) + "/" + task.gid + "/f";
@@ -100,7 +147,26 @@ export default class AsanaSync extends Plugin {
 				if (markdownView) {
 					if (!checking) {
 						if (this.settings.asanaUserGID !== "") {
-							new SearchModal(this.app, this).open();
+							new AssignedModal(this.app, this).open();
+						} else {
+							new Notice(pluginName + ": Invalid plugin settings!");
+						}
+
+					}
+					return true;
+				}
+			}
+		});
+
+		this.addCommand({
+			id: 'asana-get-followed-task',
+			name: 'Get Followed Task',
+			checkCallback: (checking: boolean) => {
+				const markdownView = this.app.workspace.getActiveViewOfType(MarkdownView);
+				if (markdownView) {
+					if (!checking) {
+						if (this.settings.asanaUserGID !== "") {
+							new FollowedModal(this.app, this).open();
 						} else {
 							new Notice(pluginName + ": Invalid plugin settings!");
 						}

@@ -19,4 +19,16 @@ If your plugin does not need CSS, delete this file.
 	font-size: 12px;
 	font-style: italic;
 	opacity: 0.8;
+	display: inline-block;
+}
+
+.suggestion-projects+.suggestion-due-date::before{
+	content: ", ";
+}
+
+.asana-modal .suggestion-projects{
+	font-size: 12px;
+	font-style: italic;
+	opacity: 0.8;
+	display: inline-block;
 }

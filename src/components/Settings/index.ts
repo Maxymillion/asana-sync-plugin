@@ -70,8 +70,12 @@ export class SettingsTab extends PluginSettingTab {
 
 							this.plugin.settings.selectedWorkspace = res.data.workspaces.length > 0 ? res.data.workspaces[0] : '';
 
-							this.plugin.getTasksToday().then((data) => {
-								this.plugin.asanaTasks = data;
+							this.plugin.getUserAssignedTasks().then((data) => {
+								this.plugin.tasksAssigned = data;
+							});
+
+							this.plugin.getUserFollowedTasks().then((data) => {
+								this.plugin.tasksFollowed = data;
 							});
 
 							await this.plugin.saveSettings();
@@ -113,7 +117,8 @@ export class SettingsTab extends PluginSettingTab {
 					dd.setValue(String(this.plugin.settings.syncInterval));
 					dd.onChange(async (val) => {
 						this.plugin.settings.syncInterval = Number(val);
-						clearInterval(syncInterval);
+						clearInterval(this.plugin.syncInterval(Number(val)));
+						this.plugin.syncInterval(Number(val));
 						await this.plugin.saveSettings();
 					})
 					return dd;

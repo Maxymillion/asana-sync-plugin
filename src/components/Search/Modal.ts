@@ -51,10 +51,11 @@ export class SearchModal extends Modal {
 	}
 
 	private getParsedTask(task: any) {
+		console.log(task);
 		let taskLink = "https://app.asana.com/0/" + (task.projects.length > 0 ? task.projects[0].gid : 0) + "/" + task.gid + "/f";
 
 		this.app.vault.create(task.gid + ".asana.md", taskTemplate(task.name, taskLink)).catch(() => {
-			console.log("File already exists, skipped creating file")
+			console.log("File already exists, skipped creating file");
 		});
 
 		return "- [ ] [[" + task.gid + ".asana|" + task.name + "]] \n";
@@ -63,6 +64,7 @@ export class SearchModal extends Modal {
 	private getTaskFromSelection() {
 		if (this.settings.selected !== "") {
 
+			console.log()
 			// @ts-ignore
 			this.editor?.replaceSelection(this.getParsedTask(this.settings.tasks.data.filter((val) => val.gid === this.settings.selected)[0]));
 
@@ -81,7 +83,6 @@ export class SearchModal extends Modal {
 			this.setSelected(parentChildren[0]);
 			parentChildren[0].scrollIntoView({block: "end", inline: "nearest"});
 		}
-
 		if (direction === "up" && selectedEl.previousSibling !== null) {
 			this.setSelected(selectedEl.previousSibling);
 			selectedEl.previousSibling.scrollIntoView({block: "end", inline: "nearest"});
@@ -91,17 +92,27 @@ export class SearchModal extends Modal {
 		}
 	}
 
-	private generateList(modalEl: any, tasks: any) {
+	protected generateList(modalEl: any, tasks: any) {
 		let results = modalEl.createDiv('prompt-results');
 		tasks.map((task: any) => {
 			let item = results.createDiv('suggestion-item mod-complex')
 			item.setAttribute("data-gid", task.gid);
 			let el = item.createDiv('suggestion-content');
 			el.createDiv('suggestion-title').innerHTML = task.name;
+			let sub = el.createDiv('suggestion-subtitle');
+			if (task.projects.length > 0 && this.plugin.settings.searchShowProjectName) {
+				let projectsString = "";
+				task.projects.map((project: any, index: number) => {
+					projectsString += project.name;
+					if (index + 1 !== task.projects.length) {
+						projectsString += ", ";
+					}
+				})
+				sub.createDiv('suggestion-projects').innerHTML = projectsString;
+			}
 			if (task.due_on && this.plugin.settings.searchShowDueDate) {
 				let due = new Date(task.due_on);
-
-				el.createDiv('suggestion-due-date').innerHTML = "Due " + (!isToday(due) ? !isTomorrow(due) ? "on " + due.toLocaleDateString() : "Tomorrow" : "today");
+				sub.createDiv('suggestion-due-date').innerHTML = "Due " + (!isToday(due) ? !isTomorrow(due) ? "on " + due.toLocaleDateString() : "Tomorrow" : "today");
 			}
 			item.onclick = () => this.getTaskFromSelection();
 			item.onmouseenter = (e: MouseEvent) => this.setSelected(e.target);
@@ -116,34 +127,7 @@ export class SearchModal extends Modal {
 		}
 	}
 
-	async onOpen() {
-		const {modalEl} = this;
 
-		this.settings.tasks = await this.plugin.getTasks();
-
-		let taskResults = this.settings.tasks;
-
-		let taskInput = modalEl.createDiv('prompt-input-container')
-			.createEl('input', 'prompt-input');
-
-		taskInput.placeholder = "Find using task name";
-
-		taskInput.oninput = (e: InputEvent) => {
-			// @ts-ignore
-			if (e.target && e.target.value !== "") {
-				let resultEl = modalEl.querySelector(".prompt-results");
-				if (resultEl !== null) {
-					resultEl.remove();
-				}
-				// @ts-ignore
-				this.generateList(modalEl, taskResults.data.filter((val) => val.name.toLowerCase().contains(e.target.value.toLowerCase())));
-			}
-		}
-
-		taskInput.focus();
-
-		this.generateList(modalEl, taskResults.data);
-	}
 
 	onClose() {
 		const {contentEl} = this;

@@ -1,5 +1,5 @@
 import {App, Notice, PluginSettingTab, Setting} from "obsidian";
-import {DEFAULT_SETTINGS} from "../../Utils/types";
+import {DEFAULT_SETTINGS} from "../../utils/types";
 import AsanaSync, {pluginName} from "../../main";
 
 export class SettingsTab extends PluginSettingTab {

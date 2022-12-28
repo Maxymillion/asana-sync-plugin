@@ -1,7 +1,7 @@
 import {App, Editor, MarkdownView, Modal} from "obsidian";
 import {AsanaModalSettings} from "./types";
 import AsanaSync from "../../main";
-import {isToday, isTomorrow} from "../../Utils";
+import {isToday, isTomorrow} from "../../utils";
 import {taskTemplate} from "../Task";
 
 export class SearchModal extends Modal {

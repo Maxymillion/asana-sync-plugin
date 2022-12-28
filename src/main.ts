@@ -1,6 +1,6 @@
 import {Editor, MarkdownView, Notice, Plugin, TFile} from 'obsidian';
 import {SearchModal} from "./components/Search/Modal";
-import {AsanaSyncSettings, DEFAULT_SETTINGS} from "./Utils/types";
+import {AsanaSyncSettings, DEFAULT_SETTINGS} from "./utils/types";
 import {SettingsTab} from "./components/Settings";
 import {taskTemplate} from "./components/Task";
 import {isToday} from "./utils";

@@ -65,7 +65,9 @@ export class SettingsTab extends PluginSettingTab {
 
 							this.plugin.settings.asanaWorkplaces = [];
 							res.data.workspaces.length > 0 && res.data.workspaces.forEach((ws: { name: any; gid: any; }) => {
-								this.plugin.settings.asanaWorkplaces.push({name: ws.name, gid: ws.gid});
+								if (typeof this.plugin.settings.asanaWorkplaces !== "string") {
+									this.plugin.settings.asanaWorkplaces.push({name: ws.name, gid: ws.gid});
+								}
 							});
 
 							this.plugin.settings.selectedWorkspace = res.data.workspaces.length > 0 ? res.data.workspaces[0] : '';
@@ -91,10 +93,13 @@ export class SettingsTab extends PluginSettingTab {
 			.setName('Workplace')
 			.setDesc('Select a workplace to sync data from')
 			.addDropdown((dd) => {
+				if (typeof this.plugin.settings.asanaWorkplaces !== "string") {
 					this.plugin.settings.asanaWorkplaces.length > 0 && this.plugin.settings.asanaWorkplaces.map((work) => {
 						dd.addOption(work.gid, work.name);
 					})
+				}
 					dd.onChange(async (val) => {
+						// @ts-ignore
 						this.plugin.settings.selectedWorkspace = val;
 						await this.plugin.saveSettings();
 					})

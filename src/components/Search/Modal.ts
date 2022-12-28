@@ -97,7 +97,7 @@ export class SearchModal extends Modal {
 			let item = results.createDiv('suggestion-item mod-complex')
 			item.setAttribute("data-gid", task.gid);
 			let el = item.createDiv('suggestion-content');
-			el.createDiv('suggestion-title').innerHTML = task.name;
+			el.createEl('div', { text: task.name, cls: "suggestion-title" });
 			let sub = el.createDiv('suggestion-subtitle');
 			if (task.projects.length > 0 && this.plugin.settings.searchShowProjectName) {
 				let projectsString = "";
@@ -107,11 +107,11 @@ export class SearchModal extends Modal {
 						projectsString += ", ";
 					}
 				})
-				sub.createDiv('suggestion-projects').innerHTML = projectsString;
+				sub.createEl('div', {text: projectsString, cls: 'suggestion-projects'});
 			}
 			if (task.due_on && this.plugin.settings.searchShowDueDate) {
 				let due = new Date(task.due_on);
-				sub.createDiv('suggestion-due-date').innerHTML = "Due " + (!isToday(due) ? !isTomorrow(due) ? "on " + due.toLocaleDateString() : "Tomorrow" : "today");
+				sub.createEl('div', {text: "Due " + (!isToday(due) ? !isTomorrow(due) ? "on " + due.toLocaleDateString() : "Tomorrow" : "today"), cls: 'suggestion-due-date'});
 			}
 			item.onclick = () => this.getTaskFromSelection();
 			item.onmouseenter = (e: MouseEvent) => this.setSelected(e.target);

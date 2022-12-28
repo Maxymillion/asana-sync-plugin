@@ -1,4 +1,4 @@
-import {Editor, MarkdownView, Notice, Plugin} from 'obsidian';
+import {Editor, MarkdownView, Notice, Plugin, TFile} from 'obsidian';
 import {SearchModal} from "./components/Search/Modal";
 import {AsanaSyncSettings, DEFAULT_SETTINGS} from "./Utils/types";
 import {SettingsTab} from "./components/Settings";
@@ -16,7 +16,7 @@ export default class AsanaSync extends Plugin {
 
 	tasksFollowed = [];
 
-	currentlyProcessing = [];
+	currentlyProcessing: string[] = [];
 
 	async getUserAssignedTasks() {
 		if (this.settings.syncInterval === 0) {
@@ -160,12 +160,16 @@ export default class AsanaSync extends Plugin {
 										this.currentlyProcessing.remove(taskID);
 									})
 								} else if (checkLocal !== null) {
-									this.app.fileManager.processFrontMatter(checkLocal, (fn) => {
-										activeEditor?.editor?.replaceRange('[[' + checkLocal.path + '|'+fn.title+']]', {
-											line: index,
-											ch: from
-										}, {line: index, ch: from + url.length});
-;									})
+									if (checkLocal instanceof TFile) {
+										this.app.fileManager.processFrontMatter(checkLocal, (fn) => {
+											// @ts-ignore
+											activeEditor?.editor?.replaceRange('[[' + checkLocal.path + '|' + fn.title + ']]', {
+												line: index,
+												ch: from
+											}, {line: index, ch: from + url.length});
+											;
+										})
+									}
 								}
 
 							}
@@ -201,7 +205,7 @@ export default class AsanaSync extends Plugin {
 
 		this.addCommand({
 			id: 'asana-get-due-tasks',
-			name: 'Get Due Tasks',
+			name: 'Get due tasks',
 			editorCallback: async (editor: Editor, view: MarkdownView) => {
 				if (this.settings.asanaUserGID !== "") {
 					let taskList = "";
@@ -226,7 +230,7 @@ export default class AsanaSync extends Plugin {
 
 		this.addCommand({
 			id: 'asana-get-task',
-			name: 'Get Assigned Task',
+			name: 'Find assigned task',
 			checkCallback: (checking: boolean) => {
 				const markdownView = this.app.workspace.getActiveViewOfType(MarkdownView);
 				if (markdownView) {
@@ -245,7 +249,7 @@ export default class AsanaSync extends Plugin {
 
 		this.addCommand({
 			id: 'asana-get-followed-task',
-			name: 'Get Followed Task',
+			name: 'Find followed task',
 			checkCallback: (checking: boolean) => {
 				const markdownView = this.app.workspace.getActiveViewOfType(MarkdownView);
 				if (markdownView) {

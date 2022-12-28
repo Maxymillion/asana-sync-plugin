@@ -6,6 +6,13 @@ How about we make it possible to import Asana tasks into Obsidian. Note, this is
 - Search (and import) followed tasks
 - Auto replace links and generate pages.
 
+
+### Instructions
+- Install the plugin from the Community Plugins tab.
+- Activate **Asana Sync** in the Community Plugins tab.
+- Fill out the required fields and setup the connection.
+- Assign keybindings or use the implemented commands.
+
 ### Dependencies
 Best experience with the [Front Matter Title](obsidian://show-plugin?id=obsidian-front-matter-title-plugin) plugin.
 

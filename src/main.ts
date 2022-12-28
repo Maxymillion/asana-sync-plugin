@@ -9,13 +9,14 @@ import {FollowedModal} from "./components/Search/FollowedModal";
 
 export const pluginName = "Asana Sync";
 
-
 export default class AsanaSync extends Plugin {
 	settings: AsanaSyncSettings;
 
 	tasksAssigned = [];
 
 	tasksFollowed = [];
+
+	currentlyProcessing = [];
 
 	async getUserAssignedTasks() {
 		if (this.settings.syncInterval === 0) {
@@ -83,6 +84,19 @@ export default class AsanaSync extends Plugin {
 		}
 	}
 
+	async getTasksFromID(taskID: string) {
+		if (this.settings.selectedWorkspace && this.settings.selectedWorkspace.gid && this.settings.asanaAPIKey) {
+			const response = await fetch('https://app.asana.com/api/1.0/tasks/' + taskID, {
+				method: 'GET',
+				headers: {
+					'Content-Type': 'application/json',
+					'Authorization': 'Bearer ' + this.settings.asanaAPIKey,
+				},
+			});
+			return response.json();
+		}
+	}
+
 	private syncLocalTasks() {
 		this.getTasksAssigned().then((data) => {
 			this.tasksAssigned = data;
@@ -98,10 +112,81 @@ export default class AsanaSync extends Plugin {
 		}
 	}, 1000 * interval);
 
+
+	replaceInterval = window.setInterval(() => {
+		this.replaceAsanaLinks();
+	}, 200);
+
+
+	private getParsedLink(task: any) {
+		let taskLink = "https://app.asana.com/0/" + (task.projects.length > 0 ? task.projects[0].gid : 0) + "/" + task.gid + "/f";
+
+		this.app.vault.create(task.gid + ".asana.md", taskTemplate(task.name, taskLink)).catch(() => {
+			console.log("File already exists, skipped creating file");
+		});
+		return "[[" + task.gid + ".asana|" + task.name + "]] \n";
+	}
+
+
+	replaceAsanaLinks() {
+
+		if (this.settings.autoImportAsanaLinks) {
+			let activeEditor = this.app.workspace.activeEditor;
+			if (activeEditor && activeEditor.editor) {
+				activeEditor.editor.processLines((index, text) => {
+					let urlRegex = /(https?:\/\/(?:www\.|(?!www))[^\s\.]+\.[^\s]{2,}|www\.[^\s]+\.[^\s]{2,})/gi;
+					let urlMatches = text.match(urlRegex);
+
+					if (urlMatches) {
+						urlMatches.map((url) => {
+
+							if (url.contains('app.asana.com')) {
+								let from = text.indexOf(url);
+								let urlArr = url.split("/");
+								let taskID = urlArr[urlArr.length - 1];
+								if (taskID === "f") {
+									taskID = urlArr[urlArr.length - 2];
+								}
+
+								let checkLocal = this.app.vault.getAbstractFileByPath(taskID + ".asana.md");
+
+								if (!this.currentlyProcessing.contains(taskID) && checkLocal === null) {
+									this.currentlyProcessing.push(taskID);
+									this.getTasksFromID(taskID).then(data => {
+										activeEditor?.editor?.replaceRange(this.getParsedLink(data.data), {
+											line: index,
+											ch: from
+										}, {line: index, ch: from + url.length});
+										this.currentlyProcessing.remove(taskID);
+									})
+								} else if (checkLocal !== null) {
+									this.app.fileManager.processFrontMatter(checkLocal, (fn) => {
+										activeEditor?.editor?.replaceRange('[[' + checkLocal.path + '|'+fn.title+']]', {
+											line: index,
+											ch: from
+										}, {line: index, ch: from + url.length});
+;									})
+								}
+
+							}
+						})
+					}
+					;
+
+				}, (index, text, val) => {
+
+				});
+			}
+		}
+
+	}
+
 	async onload() {
 		await this.loadSettings();
 
 		this.registerInterval(this.syncInterval(this.settings.syncInterval ?? 60));
+
+		this.registerInterval(this.replaceInterval);
 
 		if (this.settings.selectedWorkspace && this.settings.selectedWorkspace.gid != "" && this.settings.asanaUserGID != "") {
 

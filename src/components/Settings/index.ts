@@ -105,6 +105,19 @@ export class SettingsTab extends PluginSettingTab {
 		new Setting(containerEl)
 			.setDisabled(true)
 			.setClass(this.plugin.settings.asanaWorkplaces.length < 1 ? "setting-invisible" : "setting-visible")
+			.setName('Auto Convert Links')
+			.setDesc('This will automatically convert all Asana links (in the active editor) into pages with imported data.')
+			.addToggle((t) =>  {
+				t.setValue(this.plugin.settings.autoImportAsanaLinks)
+				t.onChange(async (val) => {
+					this.plugin.settings.autoImportAsanaLinks = val;
+					await this.plugin.saveSettings();
+				})
+			})
+
+		new Setting(containerEl)
+			.setDisabled(true)
+			.setClass(this.plugin.settings.asanaWorkplaces.length < 1 ? "setting-invisible" : "setting-visible")
 			.setName('Sync Interval')
 			.setDesc('Select an interval in which the cache will update, immediate will cause the plugin to directly access the API on every call instead of the cached version')
 			.addDropdown((dd) => {

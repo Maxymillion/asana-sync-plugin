@@ -3,6 +3,7 @@ export interface AsanaSyncSettings {
 	asanaUserGID: string;
 	asanaWorkplaces: AsanaWorkspace[] | string;
 	selectedWorkspace: AsanaWorkspace;
+	autoImportAsanaLinks: boolean;
 	syncInterval: number;
 	maxShown: number;
 	searchShowDueDate: boolean;

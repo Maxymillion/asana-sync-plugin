@@ -51,7 +51,6 @@ export class SearchModal extends Modal {
 	}
 
 	private getParsedTask(task: any) {
-		console.log(task);
 		let taskLink = "https://app.asana.com/0/" + (task.projects.length > 0 ? task.projects[0].gid : 0) + "/" + task.gid + "/f";
 
 		this.app.vault.create(task.gid + ".asana.md", taskTemplate(task.name, taskLink)).catch(() => {

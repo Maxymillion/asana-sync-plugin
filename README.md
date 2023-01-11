@@ -20,3 +20,9 @@ If you're using [Filename Heading Sync](https://github.com/dvcrn/obsidian-filena
 
 ### Credits
 The [sample plugin (by Obsidian)](https://github.com/obsidianmd/obsidian-sample-plugin) was used as the basis for this project
+
+### Support me
+If you're excited and want to show your appreciation, you can do so at the following links:
+- [BuyMeCcoffee.com/Maxymillion](https://www.buymeacoffee.com/maxymillion)
+- [ko-fi.com/Maxymillion](https://ko-fi.com/maxymillion)
+- [Directly using Stripe](https://donate.stripe.com/dR63da019bn807KfYY)

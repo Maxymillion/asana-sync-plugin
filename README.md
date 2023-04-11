@@ -1,6 +1,9 @@
 # Obsidian Asana Plugin
 How about we make it possible to import Asana tasks into Obsidian. Note, this is still an early version. Originally built for me and my colleagues to easily gain insight into Asana tasks set for that specific day.
 
+# NOTE! This plugin is getting rebuilt!
+**I've learned quite a bit from publishing my Zen plugin. Many of the "tricks" in this repo aren't the ones recommended by Obsdian.md's devs. I'll delete this repo as soon as I've build al the functionalities into the new one, which can be found here [Asana](https://github.com/Maxymillion/obsidian-asana)**
+
 ### Features
 - Search (and import) assigned tasks
 - Search (and import) followed tasks
